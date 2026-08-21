@@ -76,7 +76,7 @@ export const ASSET_CATEGORIES: AssetCategory[] = [
 export const ASSET_STATUSES = ['Available', 'Assigned', 'Under Repair', 'For Replacement', 'Disposed', 'Missing', 'Borrowed'] as const;
 export const LOCATIONS = ['KK', 'KP', 'PH'] as const;
 export const LOCATION_NAMES: Record<string, string> = { KK: 'Kota Kinabalu', KP: 'Kinabalu Park', PH: 'Pendant Hut' };
-export const DEPARTMENTS = ['Directory', 'Manager', 'HR', 'Operations', 'Accounts', 'Admin', 'IT', 'Technical', 'RSVN', 'Customer Service', 'Housekeeping', 'Kitchen', 'Trainer', 'OIC'];
+export const DEPARTMENTS = ['Directory', 'Manager', 'HR', 'Operations', 'Accounts', 'Admin', 'IT', 'Technical', 'RSVN', 'Customer Service', 'Social Media', 'Housekeeping', 'Kitchen', 'Trainer', 'OIC'];
 export const CONDITIONS = ['Excellent', 'Good', 'Fair', 'Poor', 'Damaged'];
 
 export const PPM_CHECKLISTS: Record<string, string[]> = {
