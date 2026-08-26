@@ -23,6 +23,7 @@ const FIELD = ({ label, children }: { label: string; children: React.ReactNode }
 
 const emptyForm = {
   softwareName: '', vendor: '', licenseType: 'Subscription', billingCycle: 'Annually' as string,
+  billingInterval: 1,
   users: 1, expiryDate: '', cost: 0, supplier: '',
   renewalReminderDays: 30, licenseKey: '', assignedTo: '', remarks: '',
 };
@@ -106,16 +107,18 @@ export default function Software() {
     setEditId(item.id);
     setForm({
       softwareName: item.softwareName, vendor: item.vendor || '', licenseType: item.licenseType || 'Subscription',
-      billingCycle: item.billingCycle || 'Annually', users: item.users || 1, expiryDate: item.expiryDate || '',
+      billingCycle: item.billingCycle || 'Annually', billingInterval: item.billingInterval || 1,
+      users: item.users || 1, expiryDate: item.expiryDate || '',
       cost: item.cost || 0, supplier: item.supplier || '', renewalReminderDays: item.renewalReminderDays || 30,
       licenseKey: item.licenseKey || '', assignedTo: item.assignedTo || '', remarks: item.remarks || '',
     });
     setShowModal(true);
   }
 
-  function cycleLabel(cycle?: string) {
-  if (cycle === 'Monthly') return 'monthly';
-  if (cycle === 'Annually') return 'annually';
+  function cycleLabel(cycle?: string, interval = 1) {
+  const safeInterval = Math.max(1, interval || 1);
+  if (cycle === 'Monthly') return safeInterval === 1 ? 'monthly' : `every ${safeInterval} months`;
+  if (cycle === 'Annually') return safeInterval === 1 ? 'annually' : `every ${safeInterval} years`;
   if (cycle === 'One-time') return 'one-time';
   return '';
   }
@@ -126,7 +129,7 @@ export default function Software() {
     'Vendor': i.vendor,
     'Type': i.licenseType,
     'Supplier': i.supplier,
-    'Cost / Cycle': `${i.cost ? formatCurrency(i.cost) : '—'}${i.billingCycle ? ` / ${cycleLabel(i.billingCycle)}` : ''}`,
+    'Cost / Cycle': `${i.cost ? formatCurrency(i.cost) : '—'}${i.billingCycle ? ` / ${cycleLabel(i.billingCycle, i.billingInterval)}` : ''}`,
     'No. of Users': i.users,
     'Assigned To': i.assignedTo,
     'Expiry': i.expiryDate,
@@ -198,7 +201,7 @@ export default function Software() {
                   <div>
                     <div className="text-sm font-semibold text-slate-700 dark:text-slate-200 leading-tight">{item.softwareName}</div>
                     <div className="text-xs text-slate-400">
-                      {item.licenseType}{item.billingCycle ? ` · ${item.billingCycle}` : ''} · {item.users} user{item.users !== 1 ? 's' : ''}
+                      {item.licenseType}{item.billingCycle ? ` · ${cycleLabel(item.billingCycle, item.billingInterval)}` : ''} · {item.users} user{item.users !== 1 ? 's' : ''}
                     </div>
                   </div>
                 </div>
@@ -232,7 +235,7 @@ export default function Software() {
                   <span className="text-slate-400">Cost / Cycle</span>
                   <span className="text-slate-600 dark:text-slate-300">
                     {item.cost ? formatCurrency(item.cost) : '—'}
-                    {item.billingCycle ? ` / ${cycleLabel(item.billingCycle)}` : ''}
+                    {item.billingCycle ? ` / ${cycleLabel(item.billingCycle, item.billingInterval)}` : ''}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -292,11 +295,25 @@ export default function Software() {
                   </SELECT>
                 </FIELD>
                 <FIELD label="Billing Cycle">
-                  <SELECT value={form.billingCycle} onChange={e => setForm(f => ({ ...f, billingCycle: e.target.value }))}>
+                  <SELECT value={form.billingCycle} onChange={e => setForm(f => ({
+                    ...f,
+                    billingCycle: e.target.value,
+                    billingInterval: e.target.value === 'One-time' ? 1 : f.billingInterval,
+                  }))}>
                     <option value="">— Select —</option>
                     {BILLING_CYCLES.map(b => <option key={b}>{b}</option>)}
                   </SELECT>
                 </FIELD>
+                {form.billingCycle !== 'One-time' && (
+                  <FIELD label="Billing Every">
+                    <INPUT type="number" min="1" step="1" required value={form.billingInterval}
+                      onChange={e => setForm(f => ({ ...f, billingInterval: Math.max(1, parseInt(e.target.value) || 1) }))}
+                      aria-label={`Billing every number of ${form.billingCycle === 'Annually' ? 'years' : 'months'}`} />
+                    <span className="text-xs text-slate-400 mt-1 block">
+                      {form.billingCycle === 'Annually' ? 'year(s)' : 'month(s)'}
+                    </span>
+                  </FIELD>
+                )}
                 <FIELD label="No. of Users"><INPUT type="number" min="1" value={form.users} onChange={e => setForm(f => ({ ...f, users: parseInt(e.target.value) || 1 }))} /></FIELD>
                 <FIELD label="Expiry Date"><INPUT type="date" value={form.expiryDate} onChange={e => setForm(f => ({ ...f, expiryDate: e.target.value }))} /></FIELD>
                 <FIELD label="Cost (RM)"><INPUT type="number" min="0" step="0.01" value={form.cost || ''} onChange={e => setForm(f => ({ ...f, cost: parseFloat(e.target.value) || 0 }))} placeholder="0.00" /></FIELD>

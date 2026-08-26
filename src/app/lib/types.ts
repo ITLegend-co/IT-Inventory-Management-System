@@ -133,6 +133,7 @@ export interface SoftwareLicense {
   vendor: string;
   licenseType: string;
   billingCycle: 'Monthly' | 'Annually' | 'One-time' | '';
+  billingInterval?: number;
   users: number;
   expiryDate: string;
   cost: number;
